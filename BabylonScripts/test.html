@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Babylon Portal Scripts Test</title>
+  <style>
+    html, body, #renderCanvas { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #111; }
+    #help { position: fixed; left: 12px; top: 12px; color: white; font: 14px/1.4 system-ui, sans-serif; background: rgba(0,0,0,.55); padding: 10px 12px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <canvas id="renderCanvas"></canvas>
+  <div id="help">Static Babylon.js portal script smoke test<br>Drag to orbit. The two colored planes are linked portals.</div>
+
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="Core/PortalRuntime.js"></script>
+  <script src="Core/CameraUtility.js"></script>
+  <script src="Core/PortalTraveller.js"></script>
+  <script src="Core/Portal.js"></script>
+  <script src="Core/MainCamera.js"></script>
+  <script src="shaders.js"></script>
+  <script src="Demo/Car.js"></script>
+  <script>
+    (function () {
+      var canvas = document.getElementById("renderCanvas");
+      var engine = new BABYLON.Engine(canvas, true);
+      var scene = new BABYLON.Scene(engine);
+      scene.clearColor = new BABYLON.Color4(0.02, 0.025, 0.04, 1);
+
+      var camera = new BABYLON.ArcRotateCamera("playerCamera", -Math.PI / 2, Math.PI / 2.8, 12, new BABYLON.Vector3(0, 1.2, 0), scene);
+      camera.attachControl(canvas, true);
+      camera.minZ = 0.05;
+      camera.fov = Math.PI / 3;
+
+      new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene).intensity = 0.85;
+      var ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 18, height: 18 }, scene);
+      var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
+      groundMat.diffuseColor = new BABYLON.Color3(0.22, 0.22, 0.24);
+      ground.material = groundMat;
+
+      function makePortal(name, position, yaw, color) {
+        var root = new BABYLON.TransformNode(name + "Root", scene);
+        root.position.copyFrom(position);
+        root.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0, yaw, 0);
+        var screen = BABYLON.MeshBuilder.CreatePlane(name + "Screen", { width: 2.2, height: 3.0 }, scene);
+        screen.parent = root;
+        screen.position.z = 0.01;
+        screen.material = Portals.createPortalMaterial(name + "Material", scene);
+        var frame = BABYLON.MeshBuilder.CreateBox(name + "Frame", { width: 2.45, height: 3.25, depth: 0.08 }, scene);
+        frame.parent = root;
+        frame.position.z = -0.03;
+        var frameMat = new BABYLON.StandardMaterial(name + "FrameMat", scene);
+        frameMat.diffuseColor = color;
+        frame.material = frameMat;
+        return new Portals.Portal(scene, root, screen, camera, { recursionLimit: 2 });
+      }
+
+      var portalA = makePortal("bluePortal", new BABYLON.Vector3(-3, 1.6, 0), Math.PI / 2, new BABYLON.Color3(0.1, 0.35, 1));
+      var portalB = makePortal("orangePortal", new BABYLON.Vector3(3, 1.6, 0), -Math.PI / 2, new BABYLON.Color3(1, 0.45, 0.05));
+      portalA.link(portalB);
+
+      var travellerMesh = BABYLON.MeshBuilder.CreateBox("traveller", { size: 0.8 }, scene);
+      travellerMesh.position = new BABYLON.Vector3(0, 0.45, -2.5);
+      travellerMesh.material = Portals.createSliceMaterial("travellerSlice", scene, new BABYLON.Color3(0.2, 0.9, 1));
+      var traveller = new Portals.Car(travellerMesh, scene, travellerMesh);
+      traveller.maxSpeed = 0.6;
+      traveller.targetSpeed = traveller.maxSpeed;
+      portalA.onTravellerEnterPortal(traveller);
+
+      var renderer = new Portals.MainCameraPortalRenderer(scene, [portalA, portalB]);
+      renderer.attach();
+
+      engine.runRenderLoop(function () { scene.render(); });
+      window.addEventListener("resize", function () { engine.resize(); });
+    })();
+  </script>
+</body>
+</html>
