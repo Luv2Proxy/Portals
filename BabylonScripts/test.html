@@ -31,7 +31,7 @@
       var scene = new BABYLON.Scene(engine);
       scene.clearColor = new BABYLON.Color4(0.02, 0.025, 0.04, 1);
 
-      var camera = new BABYLON.ArcRotateCamera("playerCamera", -Math.PI / 2, Math.PI / 2.8, 12, new BABYLON.Vector3(0, 1.2, 0), scene);
+      var camera = new BABYLON.ArcRotateCamera("playerCamera", -Math.PI / 2, Math.PI / 2.8, 10, new BABYLON.Vector3(0, 1.4, 0), scene);
       camera.attachControl(canvas, true);
       camera.minZ = 0.05;
       camera.fov = Math.PI / 3;
@@ -66,12 +66,19 @@
         return new Portals.Portal(scene, root, screen, camera, { recursionLimit: 2 });
       }
 
-      var portalA = makePortal("bluePortal", new BABYLON.Vector3(-3, 1.6, 0), Math.PI / 2, new BABYLON.Color3(0.1, 0.35, 1));
-      var portalB = makePortal("orangePortal", new BABYLON.Vector3(3, 1.6, 0), -Math.PI / 2, new BABYLON.Color3(1, 0.45, 0.05));
+      var portalA = makePortal("bluePortal", new BABYLON.Vector3(0, 1.6, 0), Math.PI, new BABYLON.Color3(0.1, 0.35, 1));
+      var portalB = makePortal("orangePortal", new BABYLON.Vector3(0, 1.6, 5), 0, new BABYLON.Color3(1, 0.45, 0.05));
       portalA.link(portalB);
 
+      var portalViewMarker = BABYLON.MeshBuilder.CreateBox("portalViewMarker", { size: 1 }, scene);
+      portalViewMarker.position = new BABYLON.Vector3(0, 1.1, 7.2);
+      var markerMat = new BABYLON.StandardMaterial("portalViewMarkerMat", scene);
+      markerMat.diffuseColor = new BABYLON.Color3(1, 0.25, 0.05);
+      markerMat.emissiveColor = new BABYLON.Color3(0.35, 0.08, 0.02);
+      portalViewMarker.material = markerMat;
+
       var cloud = BABYLON.MeshBuilder.CreateSphere("cloudShaderSample", { diameter: 1.2, segments: 16 }, scene);
-      cloud.position = new BABYLON.Vector3(0, 2.4, 2.5);
+      cloud.position = new BABYLON.Vector3(2.4, 2.4, 3.0);
       cloud.material = Portals.createCloudTestMaterial("cloudShaderMaterial", scene, {
         color: new BABYLON.Color4(1.0, 0.95, 0.85, 1),
         emission: new BABYLON.Color4(0.08, 0.08, 0.12, 1),

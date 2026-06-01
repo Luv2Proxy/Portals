@@ -26,7 +26,7 @@
     this.portalCamera.maxZ = playerCamera.maxZ;
     this.portalCamera.fov = playerCamera.fov || Math.PI / 3;
     this.portalCamera.detachControl();
-    this.portalCamera.setEnabled(false);
+    this.portalCamera.setEnabled(true);
     this.setDisplayMask(1);
   }
 
@@ -41,6 +41,7 @@
     var linked = this.linkedPortal;
     if (!linked || !Portals.CameraUtility.visibleFromCamera(linked.screen, this.playerCamera)) return;
     this.createViewTexture();
+    Portals.setCameraProjectionMatrix(this.portalCamera, this.playerCamera.getProjectionMatrix());
     var renderTransforms = new Array(this.recursionLimit);
     var localToWorld = this.playerCamera.getWorldMatrix().clone();
     var startIndex = 0;
@@ -58,9 +59,10 @@
       var pose = renderTransforms[r];
       if (!pose) continue;
       this.setPortalCameraPose(pose.position, pose.rotation);
+      this.portalCamera.setEnabled(true);
       this.setNearClipPlane();
       this.handleClipping();
-      this.viewTexture.render(false);
+      this.renderViewTexture();
       if (r === startIndex) linked.setDisplayMask(1);
     }
     this.screen.setEnabled(true);
@@ -126,8 +128,18 @@
     if (this.viewTexture) this.viewTexture.dispose();
     this.viewTexture = new BABYLON.RenderTargetTexture(this.transform.name + "_portalView", { width: width, height: height }, this.scene, false, true);
     this.viewTexture.activeCamera = this.portalCamera;
-    this.viewTexture.renderList = this.scene.meshes.slice();
+    var self = this;
+    this.viewTexture.renderListPredicate = function (mesh) { return mesh !== self.screen && mesh.isEnabled(); };
     if (this.linkedPortal) this.linkedPortal.setScreenTexture(this.viewTexture);
+  };
+  Portal.prototype.renderViewTexture = function () {
+    var previousActiveCamera = this.scene.activeCamera;
+    this.scene.activeCamera = this.portalCamera;
+    try {
+      this.viewTexture.render(false);
+    } finally {
+      this.scene.activeCamera = previousActiveCamera;
+    }
   };
   Portal.prototype.handleClipping = function () {
     var linked = this.linkedPortal;
@@ -192,6 +204,7 @@
   Portal.prototype.setPortalCameraPose = function (position, rotation) {
     this.portalCamera.position.copyFrom(position);
     this.portalCamera.rotationQuaternion = rotation.clone();
+    this.portalCamera.computeWorldMatrix(true);
   };
   Portal.prototype.setDisplayMask = function (value) {
     Portals.setMaterialFloat(this.screen.material, "displayMask", value);
