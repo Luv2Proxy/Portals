@@ -441,9 +441,9 @@
     var camSpaceDst = -Vector3.Dot(camSpacePos, camSpaceNormal) + this.nearClipOffset;
 
     if (Math.abs(camSpaceDst) > this.nearClipLimit) {
-      this.portalCamera.setProjectionMatrix(makeObliqueProjection(this.playerCamera.getProjectionMatrix(), new Plane(camSpaceNormal.x, camSpaceNormal.y, camSpaceNormal.z, camSpaceDst)), true);
+      setCameraProjectionMatrix(this.portalCamera, makeObliqueProjection(this.playerCamera.getProjectionMatrix(), new Plane(camSpaceNormal.x, camSpaceNormal.y, camSpaceNormal.z, camSpaceDst)));
     } else {
-      this.portalCamera.setProjectionMatrix(this.playerCamera.getProjectionMatrix(), true);
+      setCameraProjectionMatrix(this.portalCamera, this.playerCamera.getProjectionMatrix());
     }
   };
 
@@ -480,6 +480,17 @@
     result.m[10] = c.z + 1;
     result.m[14] = c.w;
     return result;
+  }
+
+  function setCameraProjectionMatrix(camera, projection) {
+    if (typeof camera.freezeProjectionMatrix === "function") {
+      camera.freezeProjectionMatrix(projection);
+    } else if (typeof camera.setProjectionMatrix === "function") {
+      camera.setProjectionMatrix(projection, true);
+    } else {
+      camera._projectionMatrix = projection.clone ? projection.clone() : projection;
+      camera._isProjectionMatrixDirty = false;
+    }
   }
 
   function MainCameraPortalRenderer(scene, portals) {
@@ -533,5 +544,7 @@
   Portals.PortalTraveller = PortalTraveller;
   Portals.Portal = Portal;
   Portals.MainCameraPortalRenderer = MainCameraPortalRenderer;
+  Portals.makeObliqueProjection = makeObliqueProjection;
+  Portals.setCameraProjectionMatrix = setCameraProjectionMatrix;
   Portals.enableHavokPhysics = enableHavokPhysics;
 })(window);

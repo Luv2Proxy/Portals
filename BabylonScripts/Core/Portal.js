@@ -186,8 +186,8 @@
     var camSpacePos = Vector3.TransformCoordinates(this.transform.position, view);
     var camSpaceNormal = Vector3.TransformNormal(clipForward, view).scale(dot).normalize();
     var camSpaceDst = -Vector3.Dot(camSpacePos, camSpaceNormal) + this.nearClipOffset;
-    if (Math.abs(camSpaceDst) > this.nearClipLimit) this.portalCamera.setProjectionMatrix(Portals.makeObliqueProjection(this.playerCamera.getProjectionMatrix(), new Plane(camSpaceNormal.x, camSpaceNormal.y, camSpaceNormal.z, camSpaceDst)), true);
-    else this.portalCamera.setProjectionMatrix(this.playerCamera.getProjectionMatrix(), true);
+    if (Math.abs(camSpaceDst) > this.nearClipLimit) Portals.setCameraProjectionMatrix(this.portalCamera, Portals.makeObliqueProjection(this.playerCamera.getProjectionMatrix(), new Plane(camSpaceNormal.x, camSpaceNormal.y, camSpaceNormal.z, camSpaceDst)));
+    else Portals.setCameraProjectionMatrix(this.portalCamera, this.playerCamera.getProjectionMatrix());
   };
   Portal.prototype.setPortalCameraPose = function (position, rotation) {
     this.portalCamera.position.copyFrom(position);

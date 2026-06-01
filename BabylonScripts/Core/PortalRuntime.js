@@ -81,6 +81,16 @@
     result.m[14] = c.w;
     return result;
   }
+  function setCameraProjectionMatrix(camera, projection) {
+    if (typeof camera.freezeProjectionMatrix === "function") {
+      camera.freezeProjectionMatrix(projection);
+    } else if (typeof camera.setProjectionMatrix === "function") {
+      camera.setProjectionMatrix(projection, true);
+    } else {
+      camera._projectionMatrix = projection.clone ? projection.clone() : projection;
+      camera._isProjectionMatrixDirty = false;
+    }
+  }
   function enableHavokPhysics(scene, gravity) {
     gravity = gravity || new Vector3(0, -9.81, 0);
     if (!global.HavokPhysics) return Promise.reject(new Error("HavokPhysics is not loaded. Include the Havok script before calling enableHavokPhysics."));
@@ -105,5 +115,6 @@
   Portals.setMaterialVector = setMaterialVector;
   Portals.collectMaterials = collectMaterials;
   Portals.makeObliqueProjection = makeObliqueProjection;
+  Portals.setCameraProjectionMatrix = setCameraProjectionMatrix;
   Portals.enableHavokPhysics = enableHavokPhysics;
 })(window);

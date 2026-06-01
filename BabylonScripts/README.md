@@ -2,14 +2,16 @@
 
 This folder contains a static-browser Babylon.js port of every Unity C# script in `Assets/Scripts`. It does not require Node, TypeScript, npm, or a bundler; load the files with plain `<script>` tags.
 
-## C# to JavaScript file map
+## Unity source to JavaScript file map
 
-| Unity C# file | Static JavaScript replacement |
+| Unity source file | Static JavaScript replacement |
 | --- | --- |
 | `Assets/Scripts/Core/CameraUtility.cs` | `BabylonScripts/Core/CameraUtility.js` |
 | `Assets/Scripts/Core/MainCamera.cs` | `BabylonScripts/Core/MainCamera.js` |
 | `Assets/Scripts/Core/Portal.cs` | `BabylonScripts/Core/Portal.js` |
 | `Assets/Scripts/Core/PortalTraveller.cs` | `BabylonScripts/Core/PortalTraveller.js` |
+| `Assets/Scripts/Core/Shaders/Portal.shader` | `BabylonScripts/Core/Shaders/Portal.js` |
+| `Assets/Scripts/Core/Shaders/Slice.shader` | `BabylonScripts/Core/Shaders/Slice.js` |
 | `Assets/Scripts/Demo/Car.cs` | `BabylonScripts/Demo/Car.js` |
 | `Assets/Scripts/Demo/CloudBehaviorTest.cs` | `BabylonScripts/Demo/CloudBehaviorTest.js` |
 | `Assets/Scripts/Demo/CloudCoreTest.cs` | `BabylonScripts/Demo/CloudCoreTest.js` |
@@ -17,10 +19,12 @@ This folder contains a static-browser Babylon.js port of every Unity C# script i
 | `Assets/Scripts/Demo/FPSController.cs` | `BabylonScripts/Demo/FPSController.js` |
 | `Assets/Scripts/Demo/PortalPhysicsObject.cs` | `BabylonScripts/Demo/PortalPhysicsObject.js` |
 | `Assets/Scripts/Demo/Spawner.cs` | `BabylonScripts/Demo/Spawner.js` |
+| `Assets/Scripts/Demo/Shaders/CloudTest.shader` | `BabylonScripts/Demo/Shaders/CloudTest.js` |
+| `Assets/Scripts/Demo/Shaders/SkyDome.shader` | `BabylonScripts/Demo/Shaders/SkyDome.js` |
 
-`BabylonScripts/Core/PortalRuntime.js` is shared runtime glue for math helpers, material setters, transform conversion, and the Havok bootstrap used by the per-file replacements. `BabylonScripts/shaders.js` provides static shader material helpers for portal screens and traveller slicing.
+`BabylonScripts/Core/PortalRuntime.js` is shared runtime glue for math helpers, material setters, transform conversion, and the Havok bootstrap used by the per-file replacements. The shader replacement files register Babylon `ShaderMaterial` programs and material helper functions for the original Unity shaders.
 
-The previous aggregate `portals.js` and `demo.js` files remain as compatibility bundles, but new code should prefer the per-original-file replacements above.
+The previous aggregate `portals.js`, `demo.js`, and `shaders.js` files remain as compatibility bundles, but new code should prefer the per-original-file replacements above.
 
 ## Script order
 
@@ -32,7 +36,10 @@ The previous aggregate `portals.js` and `demo.js` files remain as compatibility 
 <script src="BabylonScripts/Core/PortalTraveller.js"></script>
 <script src="BabylonScripts/Core/Portal.js"></script>
 <script src="BabylonScripts/Core/MainCamera.js"></script>
-<script src="BabylonScripts/shaders.js"></script>
+<script src="BabylonScripts/Core/Shaders/Portal.js"></script>
+<script src="BabylonScripts/Core/Shaders/Slice.js"></script>
+<script src="BabylonScripts/Demo/Shaders/CloudTest.js"></script>
+<script src="BabylonScripts/Demo/Shaders/SkyDome.js"></script>
 <script src="BabylonScripts/Demo/PortalPhysicsObject.js"></script>
 <script src="BabylonScripts/Demo/FPSController.js"></script>
 <script src="BabylonScripts/Demo/Spawner.js"></script>
@@ -51,7 +58,7 @@ python3 -m http.server 8000
 # then browse to http://localhost:8000/BabylonScripts/test.html
 ```
 
-The page creates two linked portal screens, a recursive portal renderer, and a simple moving traveller box.
+The page creates two linked portal screens, a recursive portal renderer, a simple moving traveller box, and demo geometry using the ported SkyDome and CloudTest shaders.
 
 ## Minimal usage
 
@@ -67,4 +74,4 @@ var renderer = new Portals.MainCameraPortalRenderer(scene, [portalA, portalB]);
 renderer.attach();
 ```
 
-Use `Portals.createPortalMaterial(name, scene)` for portal screens and `Portals.createSliceMaterial(name, scene, color)` for meshes that should be sliced while crossing a portal. If Havok is loaded, `Portals.enableHavokPhysics(scene)` enables Babylon's Havok plugin and `Portals.PortalPhysicsObject` preserves linear and angular velocity through teleportation.
+Use `Portals.createPortalMaterial(name, scene)` for portal screens, `Portals.createSliceMaterial(name, scene, options)` for meshes that should be sliced while crossing a portal, `Portals.createCloudTestMaterial(name, scene, options)` for the demo cloud material, and `Portals.createSkyDomeMaterial(name, scene, options)` for the demo sky gradient. If Havok is loaded, `Portals.enableHavokPhysics(scene)` enables Babylon's Havok plugin and `Portals.PortalPhysicsObject` preserves linear and angular velocity through teleportation.

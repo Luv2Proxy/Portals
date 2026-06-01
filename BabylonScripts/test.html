@@ -19,7 +19,10 @@
   <script src="Core/PortalTraveller.js"></script>
   <script src="Core/Portal.js"></script>
   <script src="Core/MainCamera.js"></script>
-  <script src="shaders.js"></script>
+  <script src="Core/Shaders/Portal.js"></script>
+  <script src="Core/Shaders/Slice.js"></script>
+  <script src="Demo/Shaders/SkyDome.js"></script>
+  <script src="Demo/Shaders/CloudTest.js"></script>
   <script src="Demo/Car.js"></script>
   <script>
     (function () {
@@ -34,6 +37,13 @@
       camera.fov = Math.PI / 3;
 
       new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene).intensity = 0.85;
+      var sky = BABYLON.MeshBuilder.CreateSphere("skyDome", { diameter: 40, segments: 32, sideOrientation: BABYLON.Mesh.BACKSIDE }, scene);
+      sky.material = Portals.createSkyDomeMaterial("skyDomeMaterial", scene, {
+        colorA: new BABYLON.Color4(0.4, 0.7, 1.0, 1),
+        colorB: new BABYLON.Color4(0.95, 0.75, 0.48, 1),
+        colorC: new BABYLON.Color4(0.04, 0.05, 0.12, 1)
+      });
+
       var ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 18, height: 18 }, scene);
       var groundMat = new BABYLON.StandardMaterial("groundMat", scene);
       groundMat.diffuseColor = new BABYLON.Color3(0.22, 0.22, 0.24);
@@ -60,9 +70,17 @@
       var portalB = makePortal("orangePortal", new BABYLON.Vector3(3, 1.6, 0), -Math.PI / 2, new BABYLON.Color3(1, 0.45, 0.05));
       portalA.link(portalB);
 
+      var cloud = BABYLON.MeshBuilder.CreateSphere("cloudShaderSample", { diameter: 1.2, segments: 16 }, scene);
+      cloud.position = new BABYLON.Vector3(0, 2.4, 2.5);
+      cloud.material = Portals.createCloudTestMaterial("cloudShaderMaterial", scene, {
+        color: new BABYLON.Color4(1.0, 0.95, 0.85, 1),
+        emission: new BABYLON.Color4(0.08, 0.08, 0.12, 1),
+        glossiness: 0.2
+      });
+
       var travellerMesh = BABYLON.MeshBuilder.CreateBox("traveller", { size: 0.8 }, scene);
       travellerMesh.position = new BABYLON.Vector3(0, 0.45, -2.5);
-      travellerMesh.material = Portals.createSliceMaterial("travellerSlice", scene, new BABYLON.Color3(0.2, 0.9, 1));
+      travellerMesh.material = Portals.createSliceMaterial("travellerSlice", scene, { color: new BABYLON.Color4(0.2, 0.9, 1, 1) });
       var traveller = new Portals.Car(travellerMesh, scene, travellerMesh);
       traveller.maxSpeed = 0.6;
       traveller.targetSpeed = traveller.maxSpeed;
